@@ -2071,6 +2071,22 @@ window.MANES_CONFIG = Object.assign({ intakeUrl: null, leadEndpoint: null, onCom
     Array.from(t.children).forEach(c => { const k = c.cloneNode(true); k.setAttribute('aria-hidden', 'true'); $$('a,button', k).forEach(x => x.tabIndex = -1); t.appendChild(k); });
   });
 
+  /* On mobile, start the hero carousel on the portrait (man45) and loop on from there */
+  (() => {
+    const t = document.getElementById('heroTrack'), first = t && t.querySelector('img[data-img="man45"]');
+    if (!first) return;
+    const card = first.closest('.mcard'), MOB = matchMedia('(max-width:720px)'), RMQ = matchMedia('(prefers-reduced-motion: reduce)');
+    const apply = () => {
+      if (!MOB.matches) { t.style.animationDelay = ''; return; }
+      if (!t.offsetWidth) return;
+      const loop = t.offsetWidth / 2 + 9; // one full set plus the gap, matching @keyframes slide
+      if (RMQ.matches) { t.parentElement.scrollLeft = card.offsetLeft; return; }
+      const dur = parseFloat(getComputedStyle(t).animationDuration) || 70;
+      t.style.animationDelay = `-${(card.offsetLeft / loop * dur).toFixed(3)}s`;
+    };
+    new ResizeObserver(apply).observe(t); MOB.addEventListener('change', apply);
+  })();
+
   /* ───────── Router ───────── */
   const pages = $$('[data-page]').reduce((m, el) => (m[el.dataset.page] = el, m), {});
   let current = null, first = true, prevRoute = null;
